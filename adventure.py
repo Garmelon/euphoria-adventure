@@ -72,7 +72,7 @@ class Adventure:
 	SHORT_DESCRIPTION = "play the classic text adventure 'adventure'"
 	DESCRIPTION = "'adventure' can play the classic text adventure aptly named 'adventure'.\n"
 	COMMANDS = (
-		"!adventure [start|stop|restart] - start/stop/restart an adventure\n"
+		"!adventure [start|stop|restart] - start/stop/restart the adventure\n"
 		"> your command here - send a command to the adventure, if currently running\n"
 	)
 	AUTHOR = "Created by @Garmy using github.com/Garmelon/yaboli\n"
