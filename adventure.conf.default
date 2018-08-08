@@ -1,0 +1,9 @@
+[general]
+nick = adventure
+cookiefile = adventure.cookie
+
+[rooms]
+# Format:
+# room
+# room=password
+test
