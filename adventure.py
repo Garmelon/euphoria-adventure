@@ -48,6 +48,9 @@ class AdventureWrapper:
 			self.lines = []
 		return b"".join(lines).decode("utf8") # Might result in an exception if in the middle of a character
 
+	def running(self):
+		return self.process.poll()
+
 	def _run(self):
 		while True:
 			#line = self.process.stdout.readline()
@@ -60,7 +63,7 @@ class AdventureWrapper:
 			else:
 				with self.lock:
 					self.lines.append(byte)
-	
+
 	def stop(self):
 		os.close(self.slavefd)
 		os.close(self.masterfd)
@@ -72,7 +75,8 @@ class Adventure:
 	SHORT_DESCRIPTION = "play the classic text adventure 'adventure'"
 	DESCRIPTION = "'adventure' can play the classic text adventure aptly named 'adventure'.\n"
 	COMMANDS = (
-		"!adventure [start|stop|restart] - start/stop/restart the adventure\n"
+		"!adventure start|stop|restart - start/stop/restart the adventure\n"
+		"!adventure status - check if there's currently an adventure running\n"
 		"> your command here - send a command to the adventure, if currently running\n"
 	)
 	AUTHOR = "Created by @Garmy using github.com/Garmelon/yaboli\n"
@@ -91,46 +95,45 @@ class Adventure:
 		if len(args) == 1:
 			arg = args[0]
 			if arg == "start":
-				if room.roomname in self.adventures:
+				adv = self.adventures.get(room.roomname)
+				if adv and adv.running():
 					await room.send("Adventure already running.", message.mid)
 				else:
 					adv = AdventureWrapper()
 					self.adventures[room.roomname] = adv
-					send = parallel(room.send("Adventure started.", message.mid))
-
+					await room.send("Adventure started.", message.mid)
 					await asyncio.sleep(self.DELAY)
 					text = adv.read()
 					await room.send(text, message.mid)
 
-					await send
-
-
 			elif arg == "stop":
-				try:
-					adv = self.adventures.pop(room.roomname)
+				adv = self.adventures.get(room.roomname)
+				if adv and adv.running:
 					adv.stop()
+					self.adventures.pop(room.roomname)
 					await room.send("Adventure stopped.", message.mid)
-				except KeyError:
-					await room.send("Not adventure currently running.", message.mid)
+				else:
+					await room.send("Adventure not running.", message.mid)
 
 			elif arg == "restart":
-				try:
-					adv = self.adventures.pop(room.roomname)
+				adv = self.adventures.get(room.roomname)
+				if adv and adv.running():
 					adv.stop()
-				except KeyError:
-					adv = AdventureWrapper()
-					self.adventures[room.roomname] = adv
-					send = parallel(room.send("Adventure started.", message.mid))
-				else:
-					adv = AdventureWrapper()
-					self.adventures[room.roomname] = adv
-					send = parallel(room.send("Adventure restarted.", message.mid))
+					await room.send("Adventure stopped.", message.mid)
 
+				adv = AdventureWrapper()
+				self.adventures[room.roomname] = adv
+				await room.send("Adventure started.", message.mid)
 				await asyncio.sleep(self.DELAY)
 				text = adv.read()
 				await room.send(text, message.mid)
 
-				await send
+			elif arg == "status":
+				adv = self.adventures.get(room.roomname)
+				if adv and adv.running():
+					await room.send("Adventure running.", message.mid)
+				else:
+					await room.send("Adventure not running.", message.mid)
 
 			else:
 				text = f"Unknown command: {arg!r}\n{self.COMMANDS}"
@@ -194,7 +197,7 @@ class AdventureBot(yaboli.Bot):
 			await self.botrulez_help(room, message, command, text=self.SHORT_HELP)
 
 		await self.adventure.command_adventure(room, message, command, argstr)
-	
+
 	async def on_stopped(self, room):
 		await self.adventure.on_stopped(room)
 
