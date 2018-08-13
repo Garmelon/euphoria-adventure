@@ -80,7 +80,7 @@ class Adventure:
 		"> your command here - send a command to the adventure, if currently running\n"
 	)
 	AUTHOR = "Created by @Garmy using github.com/Garmelon/yaboli\n"
-	CREDITS = "Uses the 'adventure' program.\n"
+	CREDITS = "Uses the 'adventure' program. Thanks to Xyzzy for all the help!\n"
 
 	DELAY = 0.5
 	TRIGGER_COMMAND = r">\s*(.*)"
