@@ -20,8 +20,6 @@ class AdventureWrapper:
 	def __init__(self):
 		self.masterfd, self.slavefd = pty.openpty()
 		tty.setraw(self.masterfd, when=termios.TCSANOW)
-		#self.wmaster = os.fdopen(self.masterfd, "w")
-		#self.rmaster = os.fdopen(self.masterfd, "r")
 		self.process = subprocess.Popen(
 			self.ARGS,
 			stdin=self.slavefd,
@@ -53,8 +51,6 @@ class AdventureWrapper:
 
 	def _run(self):
 		while True:
-			#line = self.process.stdout.readline()
-			#line = self.process.stdout.read(1)
 			try:
 				byte = os.read(self.masterfd, 1)
 				if not byte: return
@@ -67,7 +63,6 @@ class AdventureWrapper:
 	def stop(self):
 		os.close(self.slavefd)
 		os.close(self.masterfd)
-		#self.master.close()
 		self.process.terminate()
 		self.process.wait()
 
